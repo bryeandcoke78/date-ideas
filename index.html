@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Janine's Sunday Night Invitation</title>
+<style>
+  :root{
+    --bg:#f7f1ea;
+    --paper:#fffdf9;
+    --ink:#332b28;
+    --muted:#776c67;
+    --accent:#a64f5a;
+    --accent2:#d59b75;
+    --line:#e7d8cf;
+    --shadow:0 18px 45px rgba(67,43,37,.16);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:Georgia, "Times New Roman", serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 20% 10%, rgba(255,255,255,.95), transparent 33%),
+      radial-gradient(circle at 80% 80%, rgba(218,184,165,.35), transparent 35%),
+      var(--bg);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:24px;
+  }
+  .wrap{width:min(680px,100%)}
+  .eyebrow{
+    text-align:center;
+    font:600 12px/1.2 Arial,sans-serif;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:14px;
+  }
+  .envelope-stage{
+    position:relative;
+    min-height:420px;
+    display:grid;
+    place-items:center;
+  }
+  .envelope{
+    width:min(520px,92vw);
+    aspect-ratio:1.55/1;
+    position:relative;
+    cursor:pointer;
+    filter:drop-shadow(0 18px 22px rgba(78,53,45,.18));
+    transition:transform .25s ease;
+  }
+  .envelope:hover{transform:translateY(-3px)}
+  .env-back{
+    position:absolute; inset:0;
+    background:#d5a584;
+    border-radius:7px;
+    overflow:hidden;
+  }
+  .env-back:before,.env-back:after{
+    content:"";
+    position:absolute; bottom:-2px; width:70%; height:90%;
+    background:#e5bea3;
+  }
+  .env-back:before{left:-14%; transform:rotate(31deg); transform-origin:left bottom}
+  .env-back:after{right:-14%; transform:rotate(-31deg); transform-origin:right bottom}
+  .flap{
+    position:absolute; left:0; right:0; top:0; height:57%;
+    background:#c98e69;
+    clip-path:polygon(0 0,100% 0,50% 100%);
+    transform-origin:top;
+    transition:transform .8s cubic-bezier(.2,.75,.25,1);
+    z-index:4;
+  }
+  .seal{
+    position:absolute; left:50%; top:46%;
+    transform:translate(-50%,-50%);
+    width:58px; height:58px; border-radius:50%;
+    background:var(--accent);
+    color:#fff;
+    display:grid; place-items:center;
+    z-index:5;
+    font:700 22px Georgia,serif;
+    border:3px double rgba(255,255,255,.7);
+    transition:opacity .25s ease;
+  }
+  .tap{
+    position:absolute; left:50%; bottom:34px; transform:translateX(-50%);
+    z-index:6; white-space:nowrap;
+    color:#fff;
+    font:600 13px Arial,sans-serif;
+    letter-spacing:.06em;
+    text-shadow:0 1px 2px rgba(0,0,0,.2);
+  }
+  .letter{
+    position:absolute;
+    left:6%; right:6%; top:10%;
+    min-height:88%;
+    background:var(--paper);
+    border:1px solid #eadfd9;
+    border-radius:8px;
+    box-shadow:var(--shadow);
+    padding:30px 26px 26px;
+    z-index:2;
+    transform:translateY(28%);
+    opacity:.98;
+    transition:transform .9s cubic-bezier(.2,.75,.25,1), opacity .4s ease;
+    overflow:hidden;
+  }
+  .letter:after{
+    content:"";
+    position:absolute; inset:12px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    pointer-events:none;
+  }
+  .open .flap{transform:rotateX(180deg); z-index:1}
+  .open .seal,.open .tap{opacity:0; pointer-events:none}
+  .open .letter{transform:translateY(-28%); z-index:6}
+  .open .env-back{opacity:.35; transition:opacity .5s .3s}
+  .card-content{position:relative;z-index:1;text-align:center}
+  h1{font-size:clamp(30px,7vw,47px); margin:5px 0 8px; font-weight:500}
+  .sub{font-size:17px; color:var(--muted); margin:0 auto 18px; max-width:430px; line-height:1.5}
+  .little{font:600 12px Arial,sans-serif;color:var(--accent);letter-spacing:.12em;text-transform:uppercase}
+  .open-btn{
+    border:0; border-radius:999px; background:var(--accent); color:white;
+    min-height:48px; padding:0 22px; cursor:pointer;
+    font:700 15px Arial,sans-serif;
+    box-shadow:0 8px 18px rgba(166,79,90,.25);
+  }
+
+  .chooser{
+    display:none;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    padding:30px;
+  }
+  .chooser.show{display:block}
+  .chooser h2{text-align:center;font-weight:500;font-size:30px;margin:0 0 8px}
+  .chooser .intro{text-align:center;color:var(--muted);margin:0 0 24px;line-height:1.5}
+  .options{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .option{position:relative}
+  .option input{position:absolute;opacity:0;pointer-events:none}
+  .option label{
+    height:100%;
+    min-height:154px;
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    gap:8px; padding:18px 12px;
+    border:1.5px solid var(--line);
+    border-radius:14px;
+    cursor:pointer;
+    text-align:center;
+    transition:.2s ease;
+    background:#fff;
+  }
+  .option label:hover{transform:translateY(-2px);border-color:#cda591}
+  .option input:checked + label{
+    border:2px solid var(--accent);
+    background:#fff7f7;
+    box-shadow:0 8px 22px rgba(166,79,90,.12);
+  }
+  .icon{font-size:34px}
+  .name{font:700 17px Arial,sans-serif}
+  .desc{font:13px/1.35 Arial,sans-serif;color:var(--muted)}
+  .submit-row{text-align:center;margin-top:22px}
+  .submit{
+    border:0; border-radius:999px; background:var(--accent); color:#fff;
+    min-height:50px; padding:0 26px; cursor:pointer;
+    font:700 15px Arial,sans-serif;
+  }
+  .submit:disabled{opacity:.45;cursor:not-allowed}
+  .status{min-height:22px;text-align:center;margin-top:12px;font:14px Arial,sans-serif;color:var(--muted)}
+  .fineprint{text-align:center;margin-top:18px;font:12px/1.4 Arial,sans-serif;color:#958781}
+  .success{
+    display:none; text-align:center; padding:38px 18px;
+    background:var(--paper); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow)
+  }
+  .success.show{display:block}
+  .success .big{font-size:52px}
+  .success h2{font-size:32px;margin:8px 0}
+  .success p{color:var(--muted);font-size:17px;line-height:1.5}
+
+  @media(max-width:600px){
+    body{padding:14px}
+    .envelope-stage{min-height:355px}
+    .letter{padding:24px 18px}
+    .open .letter{transform:translateY(-22%)}
+    .options{grid-template-columns:1fr}
+    .option label{min-height:106px;flex-direction:row;text-align:left;justify-content:flex-start}
+    .chooser{padding:22px 16px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *{scroll-behavior:auto!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div id="inviteView">
+    <div class="eyebrow">For Janine — from Brian</div>
+    <div class="envelope-stage">
+      <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="Open your date invitation">
+        <div class="env-back"></div>
+        <div class="letter">
+          <div class="card-content">
+            <div class="little">Sunday, August 30 • 7:30 PM</div>
+            <h1>Janine, I have a proposition…</h1>
+            <p class="sub">You bring the smile. I’ll bring the company. Your only responsibility is choosing how we get into a little trouble Sunday night.</p>
+            <button class="open-btn" id="chooseBtn" type="button">Accept this very tempting offer →</button>
+          </div>
+        </div>
+        <div class="flap"></div>
+        <div class="seal">♥</div>
+        <div class="tap">Tap to open</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="chooser" id="chooser" aria-labelledby="chooseHeading">
+    <div class="little" style="text-align:center">Sunday • 7:30 PM</div>
+    <h2 id="chooseHeading">So, Janine… what’s it going to be?</h2>
+    <p class="intro">I picked three solid options. You pick your favourite, and I’ll take care of the rest. Drinks are included because clearly I’ve thought this through.</p>
+
+    <form id="dateForm" action="https://formsubmit.co/bryeandcoke78@gmail.com" method="POST">
+      <input type="hidden" name="_subject" value="Janine picked our Sunday date!" />
+      <input type="hidden" name="_captcha" value="false" />
+      <input type="hidden" name="_template" value="table" />
+      <input type="hidden" name="message" value="Janine submitted her choice for Sunday, August 30 at 7:30 PM." />
+
+      <div class="options">
+        <div class="option">
+          <input id="pool" name="Date Choice" type="radio" value="Shooting Pool + Drinks" required />
+          <label for="pool">
+            <span class="icon">🎱</span>
+            <span>
+              <span class="name">Shooting Pool</span><br>
+              <span class="desc">A little competition, a couple drinks, and an excellent opportunity for trash talk.</span>
+            </span>
+          </label>
+        </div>
+        <div class="option">
+          <input id="bowling" name="Date Choice" type="radio" value="Bowling + Drinks" />
+          <label for="bowling">
+            <span class="icon">🎳</span>
+            <span>
+              <span class="name">Bowling</span><br>
+              <span class="desc">Questionable footwear, competitive tension, and drinks. Romance is alive.</span>
+            </span>
+          </label>
+        </div>
+        <div class="option">
+          <input id="recroom" name="Date Choice" type="radio" value="Rec Room - Games + Drinks" />
+          <label for="recroom">
+            <span class="icon">🕹️</span>
+            <span>
+              <span class="name">The Rec Room</span><br>
+              <span class="desc">Games, drinks, and finding out which one of us is secretly way too competitive.</span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="submit-row">
+        <button class="submit" id="submitBtn" type="submit" disabled>It’s a date ♥</button>
+      </div>
+      <div class="status" id="status" aria-live="polite">Choose wisely. Brian will be judging your decision. Slightly.</div>
+      <div class="fineprint">Your selection will be delivered directly to Brian, Director of Sunday Night Operations.</div>
+    </form>
+  </section>
+
+  <section class="success" id="success">
+    <div class="big">🥂</div>
+    <h2>Excellent choice, Janine.</h2>
+    <p>Your choice is officially locked in.<br>I’ll handle the rest. See you Sunday at 7:30. 😉<br><br>— Brian</p>
+  </section>
+</main>
+
+<script>
+(() => {
+  const envelope = document.getElementById('envelope');
+  const chooseBtn = document.getElementById('chooseBtn');
+  const inviteView = document.getElementById('inviteView');
+  const chooser = document.getElementById('chooser');
+  const form = document.getElementById('dateForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const status = document.getElementById('status');
+  const success = document.getElementById('success');
+  const radios = [...document.querySelectorAll('input[name="Date Choice"]')];
+
+  function openEnvelope(){
+    envelope.classList.add('open');
+  }
+
+  envelope.addEventListener('click', e => {
+    if (e.target === chooseBtn) return;
+    openEnvelope();
+  });
+
+  envelope.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openEnvelope();
+    }
+  });
+
+  chooseBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    inviteView.style.display = 'none';
+    chooser.classList.add('show');
+    document.getElementById('chooseHeading').focus?.();
+  });
+
+  radios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      submitBtn.disabled = false;
+      const selected = radios.find(r => r.checked);
+      status.textContent = selected ? `You picked: ${selected.value}` : 'Pick your favourite above.';
+    });
+  });
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const selected = radios.find(r => r.checked);
+    if (!selected) {
+      status.textContent = 'Choose one first 🙂';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    status.textContent = 'Sending your choice…';
+
+    try {
+      const data = new FormData(form);
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: data,
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (!response.ok) throw new Error('Submission failed');
+
+      chooser.classList.remove('show');
+      success.classList.add('show');
+    } catch (err) {
+      status.textContent = 'Almost! Please tap submit once more, or let your date know your pick directly.';
+      submitBtn.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>
