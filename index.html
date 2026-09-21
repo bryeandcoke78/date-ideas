@@ -1,357 +1,411 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Janine's Sunday Night Invitation</title>
-<style>
-  :root{
-    --bg:#f7f1ea;
-    --paper:#fffdf9;
-    --ink:#332b28;
-    --muted:#776c67;
-    --accent:#a64f5a;
-    --accent2:#d59b75;
-    --line:#e7d8cf;
-    --shadow:0 18px 45px rgba(67,43,37,.16);
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    min-height:100vh;
-    font-family:Georgia, "Times New Roman", serif;
-    color:var(--ink);
-    background:
-      radial-gradient(circle at 20% 10%, rgba(255,255,255,.95), transparent 33%),
-      radial-gradient(circle at 80% 80%, rgba(218,184,165,.35), transparent 35%),
-      var(--bg);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:24px;
-  }
-  .wrap{width:min(680px,100%)}
-  .eyebrow{
-    text-align:center;
-    font:600 12px/1.2 Arial,sans-serif;
-    letter-spacing:.18em;
-    text-transform:uppercase;
-    color:var(--muted);
-    margin-bottom:14px;
-  }
-  .envelope-stage{
-    position:relative;
-    min-height:420px;
-    display:grid;
-    place-items:center;
-  }
-  .envelope{
-    width:min(520px,92vw);
-    aspect-ratio:1.55/1;
-    position:relative;
-    cursor:pointer;
-    filter:drop-shadow(0 18px 22px rgba(78,53,45,.18));
-    transition:transform .25s ease;
-  }
-  .envelope:hover{transform:translateY(-3px)}
-  .env-back{
-    position:absolute; inset:0;
-    background:#d5a584;
-    border-radius:7px;
-    overflow:hidden;
-  }
-  .env-back:before,.env-back:after{
-    content:"";
-    position:absolute; bottom:-2px; width:70%; height:90%;
-    background:#e5bea3;
-  }
-  .env-back:before{left:-14%; transform:rotate(31deg); transform-origin:left bottom}
-  .env-back:after{right:-14%; transform:rotate(-31deg); transform-origin:right bottom}
-  .flap{
-    position:absolute; left:0; right:0; top:0; height:57%;
-    background:#c98e69;
-    clip-path:polygon(0 0,100% 0,50% 100%);
-    transform-origin:top;
-    transition:transform .8s cubic-bezier(.2,.75,.25,1);
-    z-index:4;
-  }
-  .seal{
-    position:absolute; left:50%; top:46%;
-    transform:translate(-50%,-50%);
-    width:58px; height:58px; border-radius:50%;
-    background:var(--accent);
-    color:#fff;
-    display:grid; place-items:center;
-    z-index:5;
-    font:700 22px Georgia,serif;
-    border:3px double rgba(255,255,255,.7);
-    transition:opacity .25s ease;
-  }
-  .tap{
-    position:absolute; left:50%; bottom:34px; transform:translateX(-50%);
-    z-index:6; white-space:nowrap;
-    color:#fff;
-    font:600 13px Arial,sans-serif;
-    letter-spacing:.06em;
-    text-shadow:0 1px 2px rgba(0,0,0,.2);
-  }
-  .letter{
-    position:absolute;
-    left:6%; right:6%; top:10%;
-    min-height:88%;
-    background:var(--paper);
-    border:1px solid #eadfd9;
-    border-radius:8px;
-    box-shadow:var(--shadow);
-    padding:30px 26px 26px;
-    z-index:2;
-    transform:translateY(28%);
-    opacity:.98;
-    transition:transform .9s cubic-bezier(.2,.75,.25,1), opacity .4s ease;
-    overflow:hidden;
-  }
-  .letter:after{
-    content:"";
-    position:absolute; inset:12px;
-    border:1px solid var(--line);
-    border-radius:5px;
-    pointer-events:none;
-  }
-  .open .flap{transform:rotateX(180deg); z-index:1}
-  .open .seal,.open .tap{opacity:0; pointer-events:none}
-  .open .letter{transform:translateY(-28%); z-index:6}
-  .open .env-back{opacity:.35; transition:opacity .5s .3s}
-  .card-content{position:relative;z-index:1;text-align:center}
-  h1{font-size:clamp(30px,7vw,47px); margin:5px 0 8px; font-weight:500}
-  .sub{font-size:17px; color:var(--muted); margin:0 auto 18px; max-width:430px; line-height:1.5}
-  .little{font:600 12px Arial,sans-serif;color:var(--accent);letter-spacing:.12em;text-transform:uppercase}
-  .open-btn{
-    border:0; border-radius:999px; background:var(--accent); color:white;
-    min-height:48px; padding:0 22px; cursor:pointer;
-    font:700 15px Arial,sans-serif;
-    box-shadow:0 8px 18px rgba(166,79,90,.25);
-  }
-
-  .chooser{
-    display:none;
-    background:var(--paper);
-    border:1px solid var(--line);
-    border-radius:16px;
-    box-shadow:var(--shadow);
-    padding:30px;
-  }
-  .chooser.show{display:block}
-  .chooser h2{text-align:center;font-weight:500;font-size:30px;margin:0 0 8px}
-  .chooser .intro{text-align:center;color:var(--muted);margin:0 0 24px;line-height:1.5}
-  .options{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  .option{position:relative}
-  .option input{position:absolute;opacity:0;pointer-events:none}
-  .option label{
-    height:100%;
-    min-height:154px;
-    display:flex; flex-direction:column; justify-content:center; align-items:center;
-    gap:8px; padding:18px 12px;
-    border:1.5px solid var(--line);
-    border-radius:14px;
-    cursor:pointer;
-    text-align:center;
-    transition:.2s ease;
-    background:#fff;
-  }
-  .option label:hover{transform:translateY(-2px);border-color:#cda591}
-  .option input:checked + label{
-    border:2px solid var(--accent);
-    background:#fff7f7;
-    box-shadow:0 8px 22px rgba(166,79,90,.12);
-  }
-  .icon{font-size:34px}
-  .name{font:700 17px Arial,sans-serif}
-  .desc{font:13px/1.35 Arial,sans-serif;color:var(--muted)}
-  .submit-row{text-align:center;margin-top:22px}
-  .submit{
-    border:0; border-radius:999px; background:var(--accent); color:#fff;
-    min-height:50px; padding:0 26px; cursor:pointer;
-    font:700 15px Arial,sans-serif;
-  }
-  .submit:disabled{opacity:.45;cursor:not-allowed}
-  .status{min-height:22px;text-align:center;margin-top:12px;font:14px Arial,sans-serif;color:var(--muted)}
-  .fineprint{text-align:center;margin-top:18px;font:12px/1.4 Arial,sans-serif;color:#958781}
-  .success{
-    display:none; text-align:center; padding:38px 18px;
-    background:var(--paper); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow)
-  }
-  .success.show{display:block}
-  .success .big{font-size:52px}
-  .success h2{font-size:32px;margin:8px 0}
-  .success p{color:var(--muted);font-size:17px;line-height:1.5}
-
-  @media(max-width:600px){
-    body{padding:14px}
-    .envelope-stage{min-height:355px}
-    .letter{padding:24px 18px}
-    .open .letter{transform:translateY(-22%)}
-    .options{grid-template-columns:1fr}
-    .option label{min-height:106px;flex-direction:row;text-align:left;justify-content:flex-start}
-    .chooser{padding:22px 16px}
-  }
-  @media(prefers-reduced-motion:reduce){
-    *{scroll-behavior:auto!important;transition:none!important}
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Janine's Date Night Challenge</title>
+  <style>
+    :root{
+      --bg:#09070d; --panel:#15111d; --panel2:#21182b; --text:#f7eef7;
+      --muted:#bdaebf; --pink:#d97aa8; --wine:#7b294f; --gold:#d5b06c;
+      --green:#70b58c; --red:#d36a78; --border:#3a2a43;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; color:var(--text);
+      background:
+        radial-gradient(circle at 10% 18%, rgba(232,151,70,.19) 0 2%, rgba(168,73,50,.10) 5%, transparent 13%),
+        radial-gradient(circle at 88% 29%, rgba(245,180,84,.16) 0 2.2%, rgba(133,52,48,.10) 5%, transparent 14%),
+        radial-gradient(circle at 18% 72%, rgba(208,111,65,.13) 0 1.8%, transparent 12%),
+        radial-gradient(circle at 82% 82%, rgba(219,138,68,.12) 0 1.8%, transparent 12%),
+        radial-gradient(circle at 50% 0%, #351a31 0%, #120b16 43%, #070609 100%);
+      font-family:Georgia,"Times New Roman",serif;
+      position:relative;
+    }
+    body:before,body:after{
+      content:"";position:fixed;pointer-events:none;z-index:-1;width:58px;height:92px;
+      border:1px solid rgba(225,172,96,.20);border-radius:28px 28px 18px 18px;
+      background:radial-gradient(circle at 50% 55%,rgba(255,196,100,.26),rgba(177,72,48,.09) 42%,transparent 68%);
+      box-shadow:0 0 45px rgba(224,122,66,.13);
+    }
+    body:before{left:5%;top:16%;transform:rotate(-5deg)}
+    body:after{right:6%;top:31%;transform:rotate(6deg)}
+    button{font:inherit}
+    .app{width:min(920px,calc(100% - 28px));margin:0 auto;padding:42px 0 70px}
+    .screen{display:none;animation:fade .45s ease}.screen.active{display:block}
+    @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    .card{
+      background:linear-gradient(145deg,rgba(31,23,39,.96),rgba(15,12,20,.97));
+      border:1px solid var(--border); border-radius:24px; padding:clamp(22px,5vw,48px);
+      box-shadow:0 24px 80px rgba(0,0,0,.38);
+    }
+    .center{text-align:center}.eyebrow{letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-size:.76rem}
+    h1,h2,h3{margin:.35em 0}.hero{font-size:clamp(2.35rem,7vw,4.8rem);line-height:.95}
+    h2{font-size:clamp(1.8rem,5vw,3rem)} p{line-height:1.65;color:var(--muted);font-family:Arial,sans-serif}
+    #question{font-size:clamp(1.25rem,3.2vw,1.72rem);line-height:1.38;margin-top:14px}
+    .script{font-style:italic;color:#f2c7dc}.big-icon{font-size:4rem}
+    .btn{
+      border:1px solid #7e4a66;background:linear-gradient(180deg,#8e3f67,#67243f);color:white;
+      padding:14px 22px;border-radius:999px;cursor:pointer;min-height:50px;transition:.2s;
+      box-shadow:0 8px 24px rgba(95,27,62,.24)
+    }
+    .btn:hover{transform:translateY(-2px);filter:brightness(1.1)}
+    .btn.secondary{background:transparent;border-color:var(--gold);color:#f4d9a8}
+    .btn.dark{background:#17121d;border-color:#4a374f}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+    .status{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:18px;color:var(--muted);font-family:Arial,sans-serif}
+    .keys{color:#f0d18f;font-weight:bold}
+    .answers{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:25px}
+    .answer{background:#17121d;border:1px solid var(--border);color:var(--text);padding:16px;border-radius:14px;cursor:pointer;text-align:left}
+    .answer:hover{border-color:#9b5b7d}.answer.correct{border-color:var(--green);background:#14251c}.answer.wrong{border-color:var(--red);background:#2b151c}
+    .feedback{min-height:28px;margin-top:18px;color:#e5c8d7;font-family:Arial,sans-serif}
+    .doors{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-top:28px}
+    .door{
+      min-height:180px;border:1px solid #5a3b4e;border-radius:15px;background:
+      linear-gradient(90deg,#24151e,#3a2030 50%,#21131b);color:#e9d4df;cursor:pointer;position:relative;padding:12px;
+      box-shadow:inset -10px 0 22px rgba(0,0,0,.35),0 10px 24px rgba(0,0,0,.25)
+    }
+    .door:before{content:"";position:absolute;right:14px;top:50%;width:8px;height:8px;border-radius:50%;background:var(--gold)}
+    .door.open{background:#17131d;border-color:#9a6b84}.door.open:before{display:none}
+    .door .num{font-size:2.3rem}.door .reveal{display:none;font-size:.9rem;line-height:1.35}.door.open .num{display:none}.door.open .reveal{display:block}
+    .date-icon{font-size:2.6rem;display:block;margin-bottom:8px}
+    .warning{border:1px solid #8f5e3c;background:#241911;padding:16px;border-radius:14px;color:#efc79f;font-family:Arial,sans-serif;margin:20px auto;max-width:650px}
+    .choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:25px}
+    .choice{padding:24px;border:1px solid var(--border);border-radius:18px;background:#17121d}
+    .wheel-wrap{display:flex;justify-content:center;margin:28px 0}
+    .wheel-box{position:relative;width:min(390px,85vw);aspect-ratio:1}
+    .pointer{position:absolute;left:50%;top:-5px;transform:translateX(-50%);z-index:3;font-size:2.4rem;color:var(--gold)}
+    .wheel{
+      width:100%;height:100%;border-radius:50%;border:7px solid #d0a967;
+      background:conic-gradient(#6d294a 0 72deg,#34203f 72deg 144deg,#8a4b32 144deg 216deg,#284a46 216deg 288deg,#16131d 288deg 360deg);
+      box-shadow:0 0 0 5px #261a27,0 22px 60px rgba(0,0,0,.45);transition:transform 4.5s cubic-bezier(.12,.75,.12,1);
+      position:relative;
+    }
+    .wheel-labels{position:absolute;inset:0;pointer-events:none;font-family:Arial,sans-serif;font-weight:bold;font-size:.72rem;z-index:2}
+    .wl{position:absolute;width:118px;text-align:center;left:50%;top:50%;transform-origin:0 0;color:white;text-shadow:0 1px 3px #000;line-height:1.15}
+    .mystery{color:#ffd9a1}
+    .result{font-size:clamp(2rem,6vw,3.8rem);color:#f2c7dc}
+    .tiny{font-size:.82rem;color:#8e8190;font-family:Arial,sans-serif}
+    .lock{font-size:5rem;filter:drop-shadow(0 8px 14px rgba(0,0,0,.5))}
+    @media(max-width:700px){.doors{grid-template-columns:repeat(2,1fr)}.door{min-height:145px}.answers,.choice-grid{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
-<main class="wrap">
-  <div id="inviteView">
-    <div class="eyebrow">For Janine — from Brian</div>
-    <div class="envelope-stage">
-      <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="Open your date invitation">
-        <div class="env-back"></div>
-        <div class="letter">
-          <div class="card-content">
-            <div class="little">Sunday, August 30 • 7:30 PM</div>
-            <h1>Janine, I have a proposition…</h1>
-            <p class="sub">You bring the smile. I’ll bring the company. Your only responsibility is choosing how we get into a little trouble Sunday night.</p>
-            <button class="open-btn" id="chooseBtn" type="button">Accept this very tempting offer →</button>
-          </div>
+<main class="app">
+  <section id="intro" class="screen active">
+    <div class="card center">
+      <div class="eyebrow">Private invitation • for Janine only</div>
+      <div class="lock">🔐</div>
+      <h1 class="hero">The Date<br><span class="script">Vault</span></h1>
+      <p>Janine, somewhere behind these questions is a date waiting to happen.<br>
+      The catch? You're going to have to earn your way in.</p>
+      <p class="tiny">Five episodes. Five possible keys. Several suspicious-looking doors. One date — unless you choose mayhem.</p>
+      <div class="row"><button class="btn" id="start">I accept the challenge</button></div>
+    </div>
+  </section>
+
+  <section id="quiz" class="screen">
+    <div class="card">
+      <div class="status"><span id="qCount"></span><span class="keys">🔑 <span id="keys">0</span> keys</span></div>
+      <div class="eyebrow">Answer wisely, Janine</div>
+      <h2 id="question"></h2>
+      <div class="answers" id="answers"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="row"><button class="btn" id="next" style="display:none">Next question</button></div>
+    </div>
+  </section>
+
+  <section id="hall" class="screen">
+    <div class="card center">
+      <div class="eyebrow">The Hall of Doors</div>
+      <h2>Now it gets interesting.</h2>
+      <p>You earned <strong id="earned"></strong> key<span id="plural"></span>. Every key opens one door. Find two matching dates and fate makes the choice.</p>
+      <p class="tiny" id="masterNote"></p>
+      <div class="doors" id="doors"></div>
+      <p id="doorMsg">Choose your first door.</p>
+    </div>
+  </section>
+
+  <section id="match" class="screen">
+    <div class="card center">
+      <div class="eyebrow">The doors have spoken</div>
+      <div class="big-icon" id="matchIcon"></div>
+      <h2 id="matchName"></h2>
+      <p>Well, Janine... apparently this is what fate had in mind for us.</p>
+      <div class="choice-grid">
+        <div class="choice">
+          <div class="big-icon">💋</div><h3>Accept the Date</h3>
+          <p>Play it safe. Lock it in. I promise to be on my best-ish behaviour.</p>
+          <button class="btn" id="accept">Accept this date</button>
         </div>
-        <div class="flap"></div>
-        <div class="seal">♥</div>
-        <div class="tap">Tap to open</div>
+        <div class="choice">
+          <div class="big-icon">🎡</div><h3>Wheel of Mayhem</h3>
+          <p>Reject fate and surrender our evening to a deeply questionable wheel.</p>
+          <button class="btn secondary" id="mayhem">Spin the wheel</button>
+        </div>
       </div>
     </div>
-  </div>
-
-  <section class="chooser" id="chooser" aria-labelledby="chooseHeading">
-    <div class="little" style="text-align:center">Sunday • 7:30 PM</div>
-    <h2 id="chooseHeading">So, Janine… what’s it going to be?</h2>
-    <p class="intro">I picked three solid options. You pick your favourite, and I’ll take care of the rest. Drinks are included because clearly I’ve thought this through.</p>
-
-    <form id="dateForm" action="https://formsubmit.co/bryeandcoke78@gmail.com" method="POST">
-      <input type="hidden" name="_subject" value="Janine picked our Sunday date!" />
-      <input type="hidden" name="_captcha" value="false" />
-      <input type="hidden" name="_template" value="table" />
-      <input type="hidden" name="message" value="Janine submitted her choice for Sunday, August 30 at 7:30 PM." />
-
-      <div class="options">
-        <div class="option">
-          <input id="pool" name="Date Choice" type="radio" value="Shooting Pool + Drinks" required />
-          <label for="pool">
-            <span class="icon">🎱</span>
-            <span>
-              <span class="name">Shooting Pool</span><br>
-              <span class="desc">A little competition, a couple drinks, and an excellent opportunity for trash talk.</span>
-            </span>
-          </label>
-        </div>
-        <div class="option">
-          <input id="bowling" name="Date Choice" type="radio" value="Bowling + Drinks" />
-          <label for="bowling">
-            <span class="icon">🎳</span>
-            <span>
-              <span class="name">Bowling</span><br>
-              <span class="desc">Questionable footwear, competitive tension, and drinks. Romance is alive.</span>
-            </span>
-          </label>
-        </div>
-        <div class="option">
-          <input id="recroom" name="Date Choice" type="radio" value="Rec Room - Games + Drinks" />
-          <label for="recroom">
-            <span class="icon">🕹️</span>
-            <span>
-              <span class="name">The Rec Room</span><br>
-              <span class="desc">Games, drinks, and finding out which one of us is secretly way too competitive.</span>
-            </span>
-          </label>
-        </div>
-      </div>
-
-      <div class="submit-row">
-        <button class="submit" id="submitBtn" type="submit" disabled>It’s a date ♥</button>
-      </div>
-      <div class="status" id="status" aria-live="polite">Choose wisely. Brian will be judging your decision. Slightly.</div>
-      <div class="fineprint">Your selection will be delivered directly to Brian, Director of Sunday Night Operations.</div>
-    </form>
   </section>
 
-  <section class="success" id="success">
-    <div class="big">🥂</div>
-    <h2>Excellent choice, Janine.</h2>
-    <p>Your choice is officially locked in.<br>I’ll handle the rest. See you Sunday at 7:30. 😉<br><br>— Brian</p>
+  <section id="accepted" class="screen">
+    <div class="card center">
+      <div class="eyebrow">It's official</div><div class="big-icon">🥂</div>
+      <h2>Date accepted.</h2>
+      <p>Excellent choice, Janine. I'll handle the details.<br><span class="script">You just have to show up looking dangerously cute.</span></p>
+      <p class="tiny">Screenshot this screen. It may be used as legally questionable evidence that you agreed to a date.</p>
+    </div>
   </section>
+
+  <section id="mayhemScreen" class="screen">
+    <div class="card center">
+      <div class="eyebrow">You chose chaos</div>
+      <h2>The Wheel of Mayhem</h2>
+      <p>The matched date is gone. The wheel now contains the other possibilities... and one option nobody can predict.</p>
+      <div class="warning"><strong>⚠️ MYSTERY DATE WARNING</strong><br>
+      The Mystery Date could be fun. It could be scary. It could be boring. Nobody knows. Not even Janine. Proceed with reckless curiosity.</div>
+      <div class="wheel-wrap">
+        <div class="wheel-box"><div class="pointer">▼</div><div class="wheel" id="wheel"><div class="wheel-labels" id="wheelLabels"></div></div></div>
+      </div>
+      <button class="btn" id="spin">Spin the Wheel of Mayhem</button>
+      <p class="tiny">Once spun, the wheel's decision is final. Probably.</p>
+    </div>
+  </section>
+
+  <section id="wheelResult" class="screen">
+    <div class="card center">
+      <div class="eyebrow">Mayhem has decided</div>
+      <div class="big-icon" id="resultIcon"></div>
+      <h2 class="result" id="resultName"></h2>
+      <p id="resultCopy"></p>
+      <div id="mysteryWarning" class="warning" style="display:none"><strong>🔒 Mystery Date selected.</strong><br>
+      Details remain classified. Could be fun. Could be scary. Could be boring. You chose this, Janine.</div>
+      <div class="row">
+        <button class="btn" id="finalAccept">Fine. I'm in. 😏</button>
+        <button class="btn secondary" id="kissSpin">💋 Spin again — costs one kiss</button>
+      </div>
+      <p class="tiny" id="kissDebtNote">Warning: kisses are legally non-refundable in the Date Vault.</p>
+    </div>
+  </section>
+
+  <section id="final" class="screen">
+    <div class="card center">
+      <div class="eyebrow">Challenge complete</div>
+      <div class="big-icon">❤️‍🔥</div>
+      <h1 class="hero">It's a date.</h1>
+      <p>I'll take it from here, Janine.<br><span class="script">You bring the smile. I'll bring the trouble.</span></p>
+    </div>
+  </section>
+
+  <iframe name="dateResultFrame" style="display:none" title="Date result submission"></iframe>
+  <form id="dateResultForm" action="https://formsubmit.co/bryeandcoke78@gmail.com" method="POST" target="dateResultFrame" style="display:none">
+    <input type="hidden" name="_subject" value="Janine's Date Vault Result">
+    <input type="hidden" name="_captcha" value="false">
+    <input type="hidden" name="_template" value="table">
+    <input type="hidden" name="Player" value="Janine">
+    <input type="hidden" name="Decision" id="emailDecision" value="">
+    <input type="hidden" name="Selected_Date" id="emailDate" value="">
+    <input type="hidden" name="Matched_Date" id="emailMatched" value="">
+    <input type="hidden" name="Kisses_Owed" id="emailKisses" value="0">
+  </form>
+
 </main>
 
 <script>
-(() => {
-  const envelope = document.getElementById('envelope');
-  const chooseBtn = document.getElementById('chooseBtn');
-  const inviteView = document.getElementById('inviteView');
-  const chooser = document.getElementById('chooser');
-  const form = document.getElementById('dateForm');
-  const submitBtn = document.getElementById('submitBtn');
-  const status = document.getElementById('status');
-  const success = document.getElementById('success');
-  const radios = [...document.querySelectorAll('input[name="Date Choice"]')];
-
-  function openEnvelope(){
-    envelope.classList.add('open');
+const questions = [
+  {
+    episode:'Episode 1 — "Where It All Began"',
+    q:'On the first episode of "Hinge Dating: Featuring Janine and Brian", what location did they meet at?',
+    a:["Earls","Smitties","Canadian Brewhouse","Seedy downtown bar"],
+    correct:"Canadian Brewhouse"
+  },
+  {
+    episode:'Episode 2 — "To Compete or Not to Compete"',
+    q:'On the second episode of the show titled "To Compete or Not to Compete", which area of The Rec Room did Brian make his so-called "sneak attack"?',
+    a:["Outside in the rain","After beating you at air hockey","By the bar while waiting for a cocktail","He didn't make any such move."],
+    correct:"Outside in the rain"
+  },
+  {
+    episode:'Episode 3 — "You Did Not Just Sashimi That!!?"',
+    q:'What type of sushi was newly introduced to Brian?',
+    a:["Maki roll","Volcano roll","Sashimi","Brian ate too fast to notice any new rolls."],
+    correct:"Sashimi"
+  },
+  {
+    episode:'Episode 4 — "The Screech Heard Around the Bowling Alley"',
+    q:"The fourth episode featured a whole evening of fun. Emotions ran high, there was tension, flirting, and some weirdness from Brian — not an unusual occurrence. During bowling, Brian started dancing to an old song and made a weird screech at one point, startling the entire bowling alley and probably having Janine questioning why she agreed to this. What song was it?",
+    a:["Pink Pony Club — Chappell Roan","...Baby One More Time — Britney Spears","Go — The Chemical Brothers","Blank Space — Taylor Swift"],
+    correct:"Go — The Chemical Brothers"
+  },
+  {
+    episode:"Bonus Episode",
+    q:"Janine has come up with a clever, funny yet astonishingly accurate nickname for Brian while he is working. What is that nickname?",
+    a:["Fidgety Rabbit","Sleepy Sloth","Little Octopus","Crazy Coocoo Bird"],
+    correct:"Little Octopus"
   }
+];
 
-  envelope.addEventListener('click', e => {
-    if (e.target === chooseBtn) return;
-    openEnvelope();
+const dateIdeas = [
+  {name:"Board Game Night", icon:"🎲"},
+  {name:"Comedy Club", icon:"😂"},
+  {name:"Mini Golf", icon:"⛳"},
+  {name:"Sous Sol — Candlelight Dinner", icon:"🕯️"}
+];
+
+/*
+  BRIAN: Replace these placeholder mystery options with the options you want.
+  One will be selected randomly ONLY if the wheel lands on Mystery Date.
+*/
+const mysteryDates = [
+  "Escape Room",
+  "Activate"
+];
+
+let qi=0, keyCount=0, answered=false, remainingKeys=0, opened=[], matchedDate=null, wheelItems=[], kissDebt=0;
+const $=id=>document.getElementById(id);
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));$(id).classList.add("active");window.scrollTo({top:0,behavior:"smooth"});}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function emailResult(decision, selectedDate){
+  $("emailDecision").value=decision;
+  $("emailDate").value=selectedDate;
+  $("emailMatched").value=matchedDate ? matchedDate.name : "";
+  $("emailKisses").value=kissDebt;
+  $("dateResultForm").submit();
+}
+
+$("start").onclick=()=>{show("quiz");renderQuestion();};
+function renderQuestion(){
+  answered=false;
+  const current=questions[qi];
+  $("qCount").textContent=`Question ${qi+1} of ${questions.length} • ${current.episode}`;
+  $("question").textContent=current.q;
+  $("feedback").textContent="";$("next").style.display="none";$("answers").innerHTML="";
+  const randomized=shuffle(current.a);
+  randomized.forEach((x)=>{
+    const b=document.createElement("button");b.className="answer";b.textContent=x;b.dataset.answer=x;
+    b.onclick=()=>answer(x,b);$("answers").appendChild(b);
   });
-
-  envelope.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      openEnvelope();
-    }
+}
+function answer(selected,b){
+  if(answered)return;answered=true;
+  const current=questions[qi];
+  [...$("answers").children].forEach((x)=>{
+    x.disabled=true;
+    if(x.dataset.answer===current.correct)x.classList.add("correct");
   });
+  if(selected===current.correct){
+    keyCount++;$("keys").textContent=keyCount;
+    $("feedback").textContent="🔑 Correct. Janine earns a key. The vault approves.";
+  } else {
+    b.classList.add("wrong");
+    $("feedback").textContent=`No key this time. The correct answer was ${current.correct}. Brian will try not to take this personally.`;
+  }
+  $("next").textContent=qi===questions.length-1?"Enter the Hall of Doors":"Next episode";
+  $("next").style.display="inline-block";
+}
+$("next").onclick=()=>{if(qi<questions.length-1){qi++;renderQuestion();}else setupHall();};
 
-  chooseBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    inviteView.style.display = 'none';
-    chooser.classList.add('show');
-    document.getElementById('chooseHeading').focus?.();
+function setupHall(){
+  if(keyCount===0){keyCount=1;} // keeps the experience moving even after a rough trivia round
+  remainingKeys=keyCount;opened=[];matchedDate=null;
+  $("earned").textContent=keyCount;$("plural").textContent=keyCount===1?"":"s";
+  $("masterNote").textContent=keyCount===5?"Your fifth key is a Master Key. If fate gets stubborn, it will guarantee a match.":"Every correct answer mattered. Choose carefully.";
+  const deck=shuffle(dateIdeas.flatMap((d,pair)=>[{...d,pair},{...d,pair}]));
+  window.doorDeck=deck;$("doors").innerHTML="";
+  deck.forEach((d,i)=>{
+    const b=document.createElement("button");b.className="door";b.dataset.i=i;
+    b.innerHTML=`<span class="num">🚪<br><small>Door ${i+1}</small></span><span class="reveal"><span class="date-icon">${d.icon}</span><strong>${d.name}</strong></span>`;
+    b.onclick=()=>openDoor(i,b);$("doors").appendChild(b);
   });
+  $("doorMsg").textContent=`${remainingKeys} key${remainingKeys===1?"":"s"} remaining. Choose a door.`;show("hall");
+}
+function openDoor(i,b){
+  if(b.classList.contains("open")||remainingKeys<=0||matchedDate)return;
+  let chosen=i;
+  // With five earned keys, the last key becomes a guaranteed matching Master Key.
+  if(remainingKeys===1 && keyCount===5 && opened.length===4){
+    const pairs=opened.map(x=>window.doorDeck[x].pair);
+    const target=window.doorDeck.findIndex((d,n)=>!opened.includes(n)&&pairs.includes(d.pair));
+    if(target>=0){chosen=target;b=document.querySelector(`.door[data-i="${chosen}"]`);$("doorMsg").textContent="✨ The Master Key is pulling you toward another door...";}
+  }
+  b.classList.add("open");b.disabled=true;remainingKeys--;
+  const d=window.doorDeck[chosen];
+  const match=opened.find(x=>window.doorDeck[x].pair===d.pair);
+  opened.push(chosen);
+  if(match!==undefined){matchedDate=d;setTimeout(()=>{ $("matchIcon").textContent=d.icon;$("matchName").textContent=d.name;show("match");},850);return;}
+  if(remainingKeys>0)$("doorMsg").textContent=`Behind that door: ${d.name}. No match yet. ${remainingKeys} key${remainingKeys===1?"":"s"} left.`;
+  else{
+    $("doorMsg").innerHTML=`No match this round. Fate is being difficult. <button id="retryDoors" class="btn dark" style="margin-left:8px">Try the doors again</button>`;
+    $("retryDoors").onclick=()=>{remainingKeys=keyCount;opened=[];setupHall();};
+  }
+}
 
-  radios.forEach(radio => {
-    radio.addEventListener('change', () => {
-      submitBtn.disabled = false;
-      const selected = radios.find(r => r.checked);
-      status.textContent = selected ? `You picked: ${selected.value}` : 'Pick your favourite above.';
-    });
+$("accept").onclick=()=>{emailResult("Janine accepted the matched date", matchedDate.name);show("accepted");};
+$("mayhem").onclick=()=>setupWheel();
+
+function setupWheel(isKissRespin=false){
+  const others=dateIdeas.filter(d=>d.name!==matchedDate.name);
+  wheelItems=shuffle([...others,{name:"MYSTERY DATE",icon:"❓",mystery:true}]);
+  // Duplicate a random non-mystery segment to make five visually satisfying wheel slices.
+  const extra=others[Math.floor(Math.random()*others.length)];
+  wheelItems.push({...extra});
+  wheelItems=shuffle(wheelItems);
+  $("wheelLabels").innerHTML="";
+  wheelItems.forEach((item,i)=>{
+    const el=document.createElement("div");el.className="wl"+(item.mystery?" mystery":"");
+    const angle=i*72+36;el.style.transform=`rotate(${angle}deg) translate(75px,-8px) rotate(90deg)`;
+    el.textContent=item.mystery?"MYSTERY":item.name.replace("Sous Sol — ","");
+    $("wheelLabels").appendChild(el);
   });
-
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const selected = radios.find(r => r.checked);
-    if (!selected) {
-      status.textContent = 'Choose one first 🙂';
-      return;
-    }
-
-    submitBtn.disabled = true;
-    status.textContent = 'Sending your choice…';
-
-    try {
-      const data = new FormData(form);
-      const response = await fetch(form.action, {
-        method: 'POST',
-        body: data,
-        headers: { 'Accept': 'application/json' }
-      });
-
-      if (!response.ok) throw new Error('Submission failed');
-
-      chooser.classList.remove('show');
-      success.classList.add('show');
-    } catch (err) {
-      status.textContent = 'Almost! Please tap submit once more, or let your date know your pick directly.';
-      submitBtn.disabled = false;
-    }
-  });
-})();
+  $("wheel").style.transform="rotate(0deg)";$("spin").disabled=false;
+  $("spin").textContent=isKissRespin ? "Spend the kiss & spin 💋" : "Spin the Wheel of Mayhem";
+  show("mayhemScreen");
+}
+$("spin").onclick=()=>{
+  $("spin").disabled=true;
+  const winner=Math.floor(Math.random()*wheelItems.length);
+  const slice=360/wheelItems.length;
+  // The pointer is at 12 o'clock. CSS conic-gradient starts there and proceeds clockwise.
+  // Stop somewhere safely inside the selected slice instead of always dead-centre.
+  const jitter=(Math.random()-.5)*(slice*.46);
+  const selectedAngle=(winner*slice)+(slice/2)+jitter;
+  const rotations=(6+Math.floor(Math.random()*3))*360-selectedAngle;
+  $("wheel").style.transform=`rotate(${rotations}deg)`;
+  setTimeout(()=>revealWheel(wheelItems[winner]),4700);
+};
+function revealWheel(item){
+  let finalItem=item;
+  if(item.mystery){
+    const secret=mysteryDates[Math.floor(Math.random()*mysteryDates.length)];
+    finalItem={name:"Mystery Date",icon:"❓",mystery:true,secret};
+  }
+  $("resultIcon").textContent=finalItem.icon;$("resultName").textContent=finalItem.name;
+  $("mysteryWarning").style.display=finalItem.mystery?"block":"none";
+  $("resultCopy").textContent=finalItem.mystery
+    ? "The Mystery Date has been chosen in secret. Brian gets to know. Janine does not. You'll find out when it's time. That's the point. 😏"
+    : `The wheel has spoken: ${finalItem.name}. Apparently chaos has excellent taste.`;
+  // The secret stays in memory and console only; Janine does not see it on the page.
+  window.currentWheelResult=finalItem;
+  if(finalItem.mystery) console.log("Mystery date selected:", finalItem.secret);
+  $("kissDebtNote").textContent=kissDebt
+    ? `Current price paid to the Date Vault: ${kissDebt} kiss${kissDebt===1?"":"es"} 💋`
+    : "Warning: kisses are legally non-refundable in the Date Vault.";
+  show("wheelResult");
+}
+$("finalAccept").onclick=()=>{
+  const r=window.currentWheelResult;
+  if(r){
+    const chosen=r.mystery ? r.secret : r.name;
+    const decision=r.mystery
+      ? `Janine accepted the Mystery Date — she owes ${kissDebt} kiss${kissDebt===1?"":"es"} 💋`
+      : `Janine accepted the Wheel of Mayhem date — she owes ${kissDebt} kiss${kissDebt===1?"":"es"} 💋`;
+    emailResult(decision,chosen);
+  }
+  show("final");
+};
+$("kissSpin").onclick=()=>{
+  kissDebt++;
+  setupWheel(true);
+};
 </script>
 </body>
 </html>
