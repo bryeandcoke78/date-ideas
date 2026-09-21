@@ -82,7 +82,7 @@
       position:relative;
     }
     .wheel-labels{position:absolute;inset:0;pointer-events:none;font-family:Arial,sans-serif;font-weight:bold;font-size:.72rem;z-index:2}
-    .wl{position:absolute;width:118px;text-align:center;left:50%;top:50%;transform-origin:0 0;color:white;text-shadow:0 1px 3px #000;line-height:1.15}
+    .wl{position:absolute;width:110px;text-align:center;color:white;text-shadow:0 1px 3px #000;line-height:1.15}
     .mystery{color:#ffd9a1}
     .result{font-size:clamp(2rem,6vw,3.8rem);color:#f2c7dc}
     .tiny{font-size:.82rem;color:#8e8190;font-family:Arial,sans-serif}
@@ -345,31 +345,50 @@ $("mayhem").onclick=()=>setupWheel();
 function setupWheel(isKissRespin=false){
   const others=dateIdeas.filter(d=>d.name!==matchedDate.name);
   wheelItems=shuffle([...others,{name:"MYSTERY DATE",icon:"❓",mystery:true}]);
-  // Duplicate a random non-mystery segment to make five visually satisfying wheel slices.
-  const extra=others[Math.floor(Math.random()*others.length)];
-  wheelItems.push({...extra});
-  wheelItems=shuffle(wheelItems);
+
+  // Four logical choices = four visual slices. Keeping these 1:1 prevents
+  // the pointer, label and selected result from ever disagreeing.
+  const slice=360/wheelItems.length;
+  const palette=["#6d294a","#34203f","#8a4b32","#284a46"];
+  $("wheel").style.background=`conic-gradient(${wheelItems.map((_,i)=>
+    `${palette[i]} ${i*slice}deg ${(i+1)*slice}deg`).join(",")})`;
+
   $("wheelLabels").innerHTML="";
   wheelItems.forEach((item,i)=>{
-    const el=document.createElement("div");el.className="wl"+(item.mystery?" mystery":"");
-    const angle=i*72+36;el.style.transform=`rotate(${angle}deg) translate(75px,-8px) rotate(90deg)`;
+    const el=document.createElement("div");
+    el.className="wl"+(item.mystery?" mystery":"");
+    const angle=(i*slice)+(slice/2);
+    const radius=34; // percentage of wheel radius from centre
+    const rad=(angle-90)*Math.PI/180;
+    el.style.left=`${50 + radius*Math.cos(rad)}%`;
+    el.style.top=`${50 + radius*Math.sin(rad)}%`;
+    el.style.transform="translate(-50%,-50%)";
     el.textContent=item.mystery?"MYSTERY":item.name.replace("Sous Sol — ","");
     $("wheelLabels").appendChild(el);
   });
-  $("wheel").style.transform="rotate(0deg)";$("spin").disabled=false;
+
+  // Disable transition while resetting so a re-spin does not animate backwards.
+  $("wheel").style.transition="none";
+  $("wheel").style.transform="rotate(0deg)";
+  void $("wheel").offsetWidth;
+  $("wheel").style.transition="transform 4.5s cubic-bezier(.12,.75,.12,1)";
+  $("spin").disabled=false;
   $("spin").textContent=isKissRespin ? "Spend the kiss & spin 💋" : "Spin the Wheel of Mayhem";
   show("mayhemScreen");
 }
 $("spin").onclick=()=>{
   $("spin").disabled=true;
-  const winner=Math.floor(Math.random()*wheelItems.length);
   const slice=360/wheelItems.length;
-  // The pointer is at 12 o'clock. CSS conic-gradient starts there and proceeds clockwise.
-  // Stop somewhere safely inside the selected slice instead of always dead-centre.
-  const jitter=(Math.random()-.5)*(slice*.46);
-  const selectedAngle=(winner*slice)+(slice/2)+jitter;
-  const rotations=(6+Math.floor(Math.random()*3))*360-selectedAngle;
-  $("wheel").style.transform=`rotate(${rotations}deg)`;
+  const winner=Math.floor(Math.random()*wheelItems.length);
+
+  // CSS conic-gradient's 0° is exactly the top pointer. Rotate the chosen
+  // slice centre back to 0°. Jitter stays well inside the winning slice.
+  const sliceCenter=(winner*slice)+(slice/2);
+  const jitter=(Math.random()-.5)*(slice*.34);
+  const finalOffset=-(sliceCenter+jitter);
+  const fullTurns=(6+Math.floor(Math.random()*3))*360;
+  $("wheel").style.transform=`rotate(${fullTurns+finalOffset}deg)`;
+
   setTimeout(()=>revealWheel(wheelItems[winner]),4700);
 };
 function revealWheel(item){
@@ -378,14 +397,25 @@ function revealWheel(item){
     const secret=mysteryDates[Math.floor(Math.random()*mysteryDates.length)];
     finalItem={name:"Mystery Date",icon:"❓",mystery:true,secret};
   }
-  $("resultIcon").textContent=finalItem.icon;$("resultName").textContent=finalItem.name;
+  $("resultIcon").textContent=finalItem.icon;
+  $("resultName").textContent=finalItem.mystery ? `Mystery Date: ${finalItem.secret}` : finalItem.name;
   $("mysteryWarning").style.display=finalItem.mystery?"block":"none";
+  $("mysteryWarning").innerHTML=finalItem.mystery
+    ? `<strong>🎁 Mystery revealed!</strong><br>The randomizer chose <strong>${finalItem.secret}</strong>. The mystery is over. The mayhem, however, remains. 😏`
+    : "";
   $("resultCopy").textContent=finalItem.mystery
-    ? "The Mystery Date has been chosen in secret. Brian gets to know. Janine does not. You'll find out when it's time. That's the point. 😏"
+    ? `Janine, your Mystery Date has been revealed: ${finalItem.secret}. Fate has officially committed to the bit.`
     : `The wheel has spoken: ${finalItem.name}. Apparently chaos has excellent taste.`;
   // The secret stays in memory and console only; Janine does not see it on the page.
   window.currentWheelResult=finalItem;
-  if(finalItem.mystery) console.log("Mystery date selected:", finalItem.secret);
+  if(finalItem.mystery){
+    console.log("Mystery date selected:", finalItem.secret);
+    // Show Janine the randomized Mystery Date result and email the same result to Brian.
+    emailResult(
+      `Wheel landed on Mystery Date — secret selection for Brian${kissDebt ? `; Janine currently owes ${kissDebt} kiss${kissDebt===1?"":"es"} 💋` : ""}`,
+      finalItem.secret
+    );
+  }
   $("kissDebtNote").textContent=kissDebt
     ? `Current price paid to the Date Vault: ${kissDebt} kiss${kissDebt===1?"":"es"} 💋`
     : "Warning: kisses are legally non-refundable in the Date Vault.";
